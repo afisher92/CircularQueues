@@ -17,16 +17,29 @@ reg [10:0] lowNew_ptr, lowOld_ptr, lowRead_ptr;
 reg [10:0] hiNew_ptr, hiOld_ptr, hiRead_ptr;
 
 // Declare status registers for high and low queues
-reg full_regHi, empty_regHi, full_nextHi, empty_nextHi;
+/* Define high frequency registers */
+reg hiFull_reg, hiEmpty_reg, hiFull_next, hiEmpty_next;
 reg [10:0] hiWr_reg, hiWr_next, hiWr_succ; //Points to the high frequency register that needs to be written to
 reg [10:0] hiRd_reg, hiRd_next, hiRd_succ; //Points to the high frequency register that needs to be read from
-reg full_regLow, empty_regLow, full_nextLow, empty_nextLow;
+
+/* Define low frequency Registers */
+reg lowFull_reg, lowEmpty_reg, lowFull_next, lowEmpty_next;
 reg [10:0] lowWr_reg, lowWr_next, lowWr_succ; //Points to the low frequency register that needs to be written to
 reg [10:0] lowRd_reg, lowRd_next, lowRd_succ; //Points to the low frequency register that needs to be read from
 
 /* Instantiate the dual port modules */
-dualPort1024x16 i1024Port(.clk(clk),.we(we),.waddr(waddr),.radder(raddr),.wdata(wdata),.rdata(rdata));
-dualPort1536x16 i1536Port(.clk(clk),.we(we),.waddr(waddr),.radder(raddr),.wdata(wdata),.rdata(rdata));
+/* Low frequency module connections */
+reg [9:0] lowWaddr, lowRadder;
+reg [15:0] lowWdata;
+wire [15:0] lowRdata;
+
+/* High frequency module connections */
+reg [10:0] hiWaddr, hiRadder;
+reg [15:0] hiWdata;
+wire [15:0] hiRdata;
+
+dualPort1024x16 i1024Port(.clk(clk),.we(we),.waddr(lowWaddr),.raddr(lowRaddr),.wdata(lowWdata),.rdata(lowRdata));
+dualPort1536x16 i1536Port(.clk(clk),.we(we),.waddr(hiWaddr),.raddr(hiRaddr),.wdata(hiWdata),.rdata(hiRdata));
 
 
 
