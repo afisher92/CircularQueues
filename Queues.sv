@@ -51,7 +51,7 @@ always @(posedge clk) begin
 		lowEmpty_reg <= 1'b1;
 		hiFull_reg <= 1'b0;
 		hiEmpty_reg <= 1'b1;
-	else begin
+	end else begin
 		// Set Pointers
 		lowNew_ptr <= lowNext_new;
 		lowOld_ptr <= lowNext_old;
