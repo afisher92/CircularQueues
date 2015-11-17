@@ -1,4 +1,3 @@
-//Quick Edit
 module Queues (
 	input clk, rst_n,
 	input [15:0] newsmpl,
@@ -29,6 +28,6 @@ reg [10:0] lowRd_reg, lowRd_next, lowRd_succ; //Points to the low frequency regi
 dualPort1024x16 i1024Port(.clk(clk),.we(we),.waddr(waddr),.radder(raddr),.wdata(wdata),.rdata(rdata));
 dualPort1536x16 i1536Port(.clk(clk),.we(we),.waddr(waddr),.radder(raddr),.wdata(wdata),.rdata(rdata));
 
-//Test from Modelsim
+
 
 endmodule
