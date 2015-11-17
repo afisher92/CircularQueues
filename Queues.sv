@@ -1,3 +1,4 @@
+//Quick Edit
 module Queues (
 	input clk, rst_n,
 	input [15:0] newsmpl,
