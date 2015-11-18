@@ -23,7 +23,7 @@ reg [10:0]		hiEnd_ptr;
 
 //// Define high frequency registers 
 reg 			hiFull_reg, hiEmpty_reg;	//High freq Q is full, is empty
-reg [9:0]		lowEnd_ptr;
+reg				wrt_high; 					//TRUE until high freq Q is full for the first time
 
 /* ------ Instantiate the dual port modules -------------------------------------------------------- */
 // Low frequency module connections 
@@ -41,7 +41,7 @@ dualPort1024x16 i1024Port(.clk(clk),.we(we),.waddr(lowWaddr),.raddr(lowRaddr),.w
 dualPort1536x16 i1536Port(.clk(clk),.we(we),.waddr(hiWaddr),.raddr(hiRaddr),.wdata(hiWdata),.rdata(hiRdata));
 
 /* ----- Always Block to Update States ------------------------------------------------------------ */
-always @(posedge clk) begin 
+always @(posedge clk, negedge rst_n) begin 
 	if(!rst_n) begin
 		// Reset Pointers
 		lowNew_ptr 		<= 10'h000;
@@ -61,12 +61,16 @@ end
 assign lowEnd_ptr		= lowOld_ptr + 1020;
 assign lowFull_reg		= (!rst_n) ? 1'b0 : (lowOld_ptr == lowNew_ptr + 1);
 assign lowEmpty_reg		= (!rst_n) ? 1'b1 : (lowNew_ptr == lowOld_ptr);
-//assign hiEnd_ptr		= 
+assign wrt_high			= (!rst_n) ? 1'b1 :
+						  (hiOld_ptr == 0 && hiNew_ptr == 1531) ? 1'b0 : wrt_high;
+assign hiFull_reg		= (!rst_n) ? 1'b0 : (1356  == hiNew_ptr - hiOld_ptr);
 assign hiEmpty_reg		= (!rst_n) ? 1'b1 : (hiNew_ptr == hiOld_ptr);
 
 /* ------ Manage pointers in high frequency queue ------------------------------------------------- */
 assign hiNext_new		= (hiNext_new == 1536)	? 10'h000 : hiNew_ptr + 1;
 assign hiNext_old		= (hiNext_old == 1536)	? 10'h000 : hiOld_ptr + 1;
+
+/* ------ Set read/write addresses ---------------------------------------------------------------- */
 
 
 	
