@@ -1,8 +1,8 @@
 module HiFQueues (
 	input 			clk, rst_n,
-	input [15:0] 	new_smpl,
+	input [15:0] 		new_smpl,
 	input 			wrt_smpl,
-	output [15:0] 	smpl_out,
+	output [15:0] 		smpl_out,
 	output 			sequencing
 );
 
@@ -15,18 +15,11 @@ reg [10:0]		read_ptr;
 
 /* Define high frequency registers 
 reg 			full_reg;			//High freq Q is full
-reg				wrt_high; 			//TRUE until high freq Q is full for the first time
+reg			wrt_high; 			//TRUE until high freq Q is full for the first time
 reg [10:0]		cnt;				//Counts how many addresses have samples writen to them
 
 /* ------ Instantiate the dual port modules -------------------------------------------------------- */
-// Instantiate the modules
 dualPort1536x16 i536Port(.clk(clk),.we(we),.waddr(new_ptr),.raddr(read_ptr),.wdata(new_smpl),.rdata(smpl_out));
-
-/* ------ Define States ---------------------------------------------------------------------------- */
-reg [1:0] state, nxt_state;
-localparam WRITE 	= 2'b00;		//Arrays have not yet written thte required number of samples to begin reading
-localparam FULL		= 2'b01;		//Arrays have written the required amount of samples
-localparam READ		= 2'b10;		//Arrays performing reads and writes at each cycle
 
 /* ------ Always Block to Update States ------------------------------------------------------------ */
 always @(posedge clk, negedge rst_n) begin 
