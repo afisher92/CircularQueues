@@ -18,11 +18,11 @@ reg [10:0]		hiRead_ptr;
 
 // Declare status registers for high and low queues
 //// Define low frequency Registers 
-reg 			lowFull_reg, lowEmpty_reg;	//Low freq Q is full, is empty
-reg [10:0]		hiEnd_ptr;
+reg 			lowFull_reg;	//Low freq Q is full
+reg [10:0]		lowEnd_ptr;
 
 //// Define high frequency registers 
-reg 			hiFull_reg, hiEmpty_reg;	//High freq Q is full, is empty
+reg 			hiFull_reg;	//High freq Q is full
 reg				wrt_high; 					//TRUE until high freq Q is full for the first time
 
 /* ------ Instantiate the dual port modules -------------------------------------------------------- */
@@ -72,7 +72,6 @@ always @(posedge clk, negedge rst_n)
 /* ------ Control for read/write pointers and empty/full registers -------------------------------- */
 assign lowEnd_ptr		= lowOld_ptr + 1020;
 //assign lowFull_reg		= (!rst_n) ? 1'b0 : (lowOld_ptr == lowNew_ptr + 1);
-assign lowEmpty_reg		= (!rst_n) ? 1'b1 : (lowNew_ptr == lowOld_ptr);
 always @(posedge clk, negedge rst_n) begin
 	if(!rst_n)
 		wrt_high <= 1'b1;
@@ -80,7 +79,6 @@ always @(posedge clk, negedge rst_n) begin
 		wrt_high <= 1'b0;
 end
 //assign hiFull_reg		= (!rst_n) ? 1'b0 : (1356  == hiNew_ptr - hiOld_ptr);
-//assign hiEmpty_reg		= !rst_n;
 
 /* ------ Manage pointers in high frequency queue ------------------------------------------------- */
 assign hiNext_new		= (hiNext_new == 1536)	? 10'h000 : hiNew_ptr + 1;
