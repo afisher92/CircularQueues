@@ -9,19 +9,18 @@ module Queues (
 /* ------ Define any internal variables ------------------------------------------------------------- */
 /*	Pointers designated as 'new' signify where the array is going to be written to
 	Pointers designated as 'old' signify where the array is going to read from */
-reg [10:0] 		hiArray[1535:0], lowArray[1023:0]; 
-wire 			data_wr, data_rd;
 
 // Declare pointers for high band and low band queues
-reg [10:0] 		lowNew_ptr, lowOld_ptr, lowNext_new, lowNext_old;
+reg [9:0] 		lowNew_ptr, lowOld_ptr, lowNext_new, lowNext_old;
+reg [9:0]		end_ptr;
 reg [10:0] 		hiNew_ptr, hiOld_ptr, hiNext_new, hiNext_old;
 
 // Declare status registers for high and low queues
 //// Define low frequency Registers 
-reg 			lowFull_reg, lowEmpty_reg, lowFull_next, lowEmpty_next;
+reg 			lowFull_reg, lowEmpty_reg, lowFull_next, lowEmpty_next;	//Low freq Q is full, is empty, will be full on next write, will be empty on next read
 
 //// Define high frequency registers 
-reg 			hiFull_reg, hiEmpty_reg, hiFull_next, hiEmpty_next;
+reg 			hiFull_reg, hiEmpty_reg, hiFull_next, hiEmpty_next;		//High freq Q is full, is empty, will be full on next write, will be empty on next read
 
 /* ------ Instantiate the dual port modules -------------------------------------------------------- */
 // Low frequency module connections 
@@ -42,30 +41,41 @@ dualPort1536x16 i1536Port(.clk(clk),.we(we),.waddr(hiWaddr),.raddr(hiRaddr),.wda
 always @(posedge clk) begin 
 	if(!rst_n) begin
 		// Reset Pointers
-		lowNew_ptr <= 10'h000;
-		lowOld_ptr <= 10'h000;
-		hiNew_ptr <= 10'h000;
-		hiOld_ptr <= 10'h000;
+		lowNew_ptr 		<= 10'h000;
+		lowOld_ptr 		<= 10'h000;
+		hiNew_ptr 		<= 10'h000;
+		hiOld_ptr 		<= 10'h000;
 		// Reset Empty/full definitions
-		lowFull_reg <= 1'b0;
-		lowEmpty_reg <= 1'b1;
-		hiFull_reg <= 1'b0;
-		hiEmpty_reg <= 1'b1;
+		lowFull_reg		<= 1'b0;
+		lowEmpty_reg	<= 1'b1;
+		hiFull_reg		<= 1'b0;
+		hiEmpty_reg		<= 1'b1;
 	end else begin
 		// Set Pointers
-		lowNew_ptr <= lowNext_new;
-		lowOld_ptr <= lowNext_old;
-		hiNew_ptr <= hiNext_new;
-		hiOld_ptr <= hiNext_old;
+		lowNew_ptr 		<= lowNext_new;
+		lowOld_ptr		<= lowNext_old;
+		hiNew_ptr		<= hiNext_new;
+		hiOld_ptr		<= hiNext_old;
 		// Set Empty/full definitions
-		lowFull_reg <= lowFull_next;
-		lowEmpty_reg <= lowEmpty_next;
-		hiFull_reg <= hiFull_next;
-		hiEmpty_reg <= hiEmpty_next;
+		lowFull_reg		<= lowFull_next;
+		lowEmpty_reg	<= lowEmpty_next;
+		hiFull_reg		<= hiFull_next;
+		hiEmpty_reg		<= hiEmpty_next;
 	end
 end
 	
-	
-//Test Change	
+/* ------ Designate Empty/Full Arrays ------------------------------------------------------------- */
+assign lowFull_next		= (&(lowNew_ptr + 1));	//Full next - when all bits in lowNew_ptr addr are 1 away from being all 1
+assign lowEmpty_next	= &lowFull_reg;			//Will be empty on next read
+assign hiFull_next		= (&(hiNew_ptr + 1));	//View corresp. above
+assign hiEmpty_next 	= &hiFull_reg;			//View corresp. above
+
+/* ------ Control for read/write pointers and empty/full registers -------------------------------- */
+always @()
+
+
+/* ------
+
+
 	
 endmodule
