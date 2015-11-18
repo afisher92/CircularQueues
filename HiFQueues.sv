@@ -77,3 +77,5 @@ always @(posedge wrt_smpl, negedge rst_n)
 	else if(cnt != 1535) begin
 		cnt <= hiCnt + 1;
 	end
+
+endmodule
