@@ -22,20 +22,20 @@ reg 			lowFull_reg, lowEnd_ptr;	//Low freq Q is full, when it is prepped to read
 reg [9:0]		lowCnt;				//Counts how many addresses have samples writen to them
 
 //// Define high frequency registers 
-reg 			hiFull_reg;	//High freq Q is full
-reg				wrt_high; 					//TRUE until high freq Q is full for the first time
-reg [10;0]		hiCnt;		//Counts how many addresses have samples writen to them
+reg 			hiFull_reg;			//High freq Q is full
+reg			wrt_high; 			//TRUE until high freq Q is full for the first time
+reg [10;0]		hiCnt;				//Counts how many addresses have samples writen to them
 
 /* ------ Instantiate the dual port modules -------------------------------------------------------- */
 // Low frequency module connections 
 reg [9:0] 		lowWaddr, lowRadder;
 reg [15:0] 		lowWdata;
-wire [15:0] 	lowRdata;
+wire [15:0] 		lowRdata;
 
 // High frequency module connections 
 reg [10:0] 		hiWaddr, hiRadder;
 reg [15:0] 		hiWdata;
-wire [15:0] 	hiRdata;
+wire [15:0] 		hiRdata;
 
 // Instantiate the modules
 dualPort1024x16 i1024Port(.clk(clk),.we(we),.waddr(lowWaddr),.raddr(lowRaddr),.wdata(lowWdata),.rdata(lowRdata));
@@ -55,8 +55,6 @@ always @(posedge clk, negedge rst_n) begin
 		lowOld_ptr 		<= 10'h000;
 		hiNew_ptr 		<= 10'h1FE;
 		hiOld_ptr 		<= 10'h000;
-		// Reset counters
-		lowCnt			<= 10'h000;
 	end else begin
 		// Set Pointers
 		lowNew_ptr 		<= lowNext_new;
@@ -86,6 +84,14 @@ end
 /* ------ Manage pointers in high frequency queue ------------------------------------------------- */
 assign hiNext_new		= (hiNext_new == 1536)	? 10'h000 : hiNew_ptr + 1;
 assign hiNext_old		= (hiNext_old == 1536)	? 10'h000 : hiOld_ptr + 1;
+
+/* ------ Manage Queue Counters ------------------------------------------------------------------- */
+// Low Frequency Q counter - 
+always @(posedge wrt_smpl)
+	if(!rst_n)
+		lowCnt <= 10'h000;
+	else if(~&lowCnt)
+		lowCnt <= lowCnt + 1;
 
 /* ------ Begin State Machine --------------------------------------------------------------------- */
 
