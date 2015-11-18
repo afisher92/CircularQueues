@@ -1,8 +1,8 @@
 module Queues (
 	input 			clk, rst_n,
-	input [15:0] 	newsmpl,
+	input [15:0] 		newsmpl,
 	input 			wrt_smpl,
-	output [15:0] 	smpl_out,
+	output [15:0] 		smpl_out,
 	output 			sequencing
 );
 
@@ -46,9 +46,9 @@ dualPort1536x16 i1536Port(.clk(clk),.we(we),.waddr(hiWaddr),.raddr(hiRaddr),.wda
 
 /* ------ Define States ---------------------------------------------------------------------------- */
 reg [1:0] state, nxt_state;
-localparam INIT = 2'b00;		//Reset control values
-localparam Write_Only = 2'b01;		//Arrays have not yet written thte required number of samples to begin reading
-localparam Read_Write = 2'b10;		//Arrays performing reads and writes at each cycle
+localparam WRITE 	= 2'b00;		//Arrays have not yet written thte required number of samples to begin reading
+localparam FULL		= 2'b01;		//Arrays have written the required amount of samples
+localparam READ		= 2'b10;		//Arrays performing reads and writes at each cycle
 
 /* ------ Always Block to Update States ------------------------------------------------------------ */
 always @(posedge clk, negedge rst_n) begin 
@@ -92,9 +92,10 @@ assign hiNext_old		= (hiNext_old == 1536)	? 10'h000 : hiOld_ptr + 1;
 // Low Frequency Q Counter 
 always @(posedge wrt_smpl, negedge rst_n) begin
 	if(!rst_n)
-		lowCnt	<= 10'h000;
-	else if(~&lowCnt & wrt_cnt == 1)
-		lowCnt	<= lowCnt + 1;
+		lowCnt		<= 10'h000;
+	else if(~&lowCnt & wrt_cnt == 1) begin
+		lowCnt		<= lowCnt + 1;
+	end
 	if(!rst_n) // Keep track of every other wrt_smpl
 		wrt_cnt <= 1'b0;
 	else
@@ -104,12 +105,17 @@ end
 // High Frequency Q Counter
 always @(posedge clk, negedge rst_n) 
 	if (!rst_n)
-		hiCnt	<= 11'h000;
-	else if(hiCnt != 1535)
-		hiCnt	<= hiCnt + 1;
+		hiCnt		<= 11'h000;
+	else if(hiCnt != 1535) begin
+		hiCnt		<= hiCnt + 1;
+	end
 	
 /* ------ Begin State Machine --------------------------------------------------------------------- */
-
+always @(*) 
+	case(state)
+		INIT : if (~lowFull_reg)
+			next_state = INIT;
+			
 
 	
 endmodule
