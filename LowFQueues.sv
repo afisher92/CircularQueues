@@ -40,28 +40,28 @@ always @(posedge clk, negedge rst_n) begin
 		old_ptr 		<= 10'h000;
 	end else begin
 		// Set Pointers
-		new_ptr 		<= lowNext_new;
-		old_ptr			<= lowNext_old;
+		new_ptr 		<= next_new;
+		old_ptr			<= next_old;
 	end
 end
 
 always @(posedge clk, negedge rst_n)
 	if (!rst_n)
-		state <= INIT;
+		state <= WRITE;
 	else 
 		state < nxt_state;
 
 /* ------ Control for read/write pointers and empty/full registers -------------------------------- */
-assign end_ptr		= 0ld_ptr + 1020;
+assign end_ptr		= old_ptr + 1020;
 assign full_reg		= &cnt;
 
 /* ------ Manage Queue Counters ------------------------------------------------------------------- */
 // Low Frequency Q Counter 
 always @(posedge wrt_smpl, negedge rst_n) begin
 	if(!rst_n)
-		lowCnt		<= 10'h000;
+		cnt		<= 10'h000;
 	else if(~&lowCnt & wrt_cnt == 1) begin
-		lowCnt		<= lowCnt + 1;
+		cnt		<= cnt + 1;
 	end
 	if(!rst_n) // Keep track of every other wrt_smpl
 		wrt_cnt <= 1'b0;
@@ -73,11 +73,10 @@ end
 always @(*) 
 	case(state)
 		WRITE : begin
-			if (~lowEnd_reg)
+			if (~end_reg)
 				next_state = WRITE;
 				if (wrt_cnt == 1) begin
-					lowNew_ptr	= lowNew_ptr + 1
-					lowWdata	= 
+					new_ptr	= new_ptr + 1
 			
 			
 
