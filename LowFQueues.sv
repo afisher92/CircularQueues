@@ -66,7 +66,7 @@ end
 always @(posedge wrt_smpl, negedge rst_n) begin
 	if(!rst_n) // Counts until the array is full
 		cnt		<= 10'h000;
-	else if(~&lowCnt & wrt_cnt == 1) begin
+	else if(~&cnt & wrt_cnt == 1) begin
 		cnt		<= cnt + 1;
 	end
 	if(!rst_n) // Keep track of every other wrt_smpl
