@@ -24,7 +24,10 @@ reg [9:0]		lowCnt;				//Counts how many addresses have samples writen to them
 //// Define high frequency registers 
 reg 			hiFull_reg;			//High freq Q is full
 reg			wrt_high; 			//TRUE until high freq Q is full for the first time
-reg [10;0]		hiCnt;				//Counts how many addresses have samples writen to them
+reg [10:0]		hiCnt;				//Counts how many addresses have samples writen to them
+
+// Define wrt_smpl counter
+reg			wrt_cnt;
 
 /* ------ Instantiate the dual port modules -------------------------------------------------------- */
 // Low frequency module connections 
@@ -79,20 +82,32 @@ always @(posedge clk, negedge rst_n) begin
 	else if(hiOld_ptr == 0 && hiNew_ptr == 1531)
 		wrt_high <= 1'b0;
 end
-//assign hiFull_reg		= (!rst_n) ? 1'b0 : (1356  == hiNew_ptr - hiOld_ptr);
+assign hiFull_reg		= (!rst_n) ? 1'b0 : (hiCnt == 1536);
 
 /* ------ Manage pointers in high frequency queue ------------------------------------------------- */
 assign hiNext_new		= (hiNext_new == 1536)	? 10'h000 : hiNew_ptr + 1;
 assign hiNext_old		= (hiNext_old == 1536)	? 10'h000 : hiOld_ptr + 1;
 
 /* ------ Manage Queue Counters ------------------------------------------------------------------- */
-// Low Frequency Q counter 
-always @(posedge wrt_smpl)
+// Low Frequency Q Counter 
+always @(posedge wrt_smpl, negedge rst_n) begin
 	if(!rst_n)
-		lowCnt <= 10'h000;
-	else if(~&lowCnt)
-		lowCnt <= lowCnt + 1;
+		lowCnt	<= 10'h000;
+	else if(~&lowCnt & wrt_cnt == 1)
+		lowCnt	<= lowCnt + 1;
+	if(!rst_n) // Keep track of every other wrt_smpl
+		wrt_cnt <= 1'b0;
+	else
+		wrt_cnt <= wrt_cnt + 1;
+end
 
+// High Frequency Q Counter
+always @(posedge clk, negedge rst_n) 
+	if (!rst_n)
+		hiCnt	<= 11'h000;
+	else if(hiCnt != 1535)
+		hiCnt	<= hiCnt + 1;
+	
 /* ------ Begin State Machine --------------------------------------------------------------------- */
 
 
