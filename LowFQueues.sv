@@ -12,7 +12,7 @@ module LowFQueues (
 
 // Declare pointers for high band and low band queues
 reg [9:0] 		new_ptr, old_ptr, next_new, next_old;
-reg [9:0]		read_ptr;
+reg [9:0]		read_ptr, next_read;
 
 // Declare status registers for high and low queues
 //// Define low frequency Registers 
