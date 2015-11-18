@@ -47,6 +47,7 @@ assign read		= (new_ptr == end_ptr);
 
 /* ------ Manage Next Read/Write Pointers --------------------------------------------------------- */
 assign next_new = (wrt_cnt == 1) ? new_ptr + 1;
+
 always @(next_new)
 	if (read)
 		next_old <= old_ptr + 1;
