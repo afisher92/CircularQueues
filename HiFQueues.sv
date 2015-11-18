@@ -22,19 +22,19 @@ reg [10:0]		cnt;				//Counts how many addresses have samples writen to them
 dualPort1536x16 i536Port(.clk(clk),.we(we),.waddr(new_ptr),.raddr(read_ptr),.wdata(new_smpl),.rdata(smpl_out));
 
 /* ------ Always Block to Update States ------------------------------------------------------------ */
-always @(posedge clk, negedge rst_n) begin 
+always @(wrt_smpl, negedge rst_n) begin 
 	if(!rst_n) begin
 		// Reset Pointers
 		new_ptr  <= 10'h1FE;
 		old_ptr  <= 10'h000;
-		read_ptr <= old_ptr;
 	end else begin
 		// Set Pointers
 		new_ptr	 <= next_new;
 		old_ptr	 <= next_old;
-		read_ptr <= next_read;
 	end
 end
+
+assign read_ptr = nect_read;
 
 /* ------ Control for read/write pointers and empty/full registers -------------------------------- */
 // Mimic LowFQueue end_ptr
@@ -59,7 +59,7 @@ end
 
 always @(posedge clk, negedge rst_n) begin
 	if (!rst_n)
-		next_read <= old_ptr + 1;
+		next_read <= old_ptr;
 	else if(read_ptr == 1535)
 		next_read <= 10'h000;
 	else if (read & read_ptr != new_ptr - 1)
