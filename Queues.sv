@@ -12,15 +12,18 @@ module Queues (
 
 // Declare pointers for high band and low band queues
 reg [9:0] 		lowNew_ptr, lowOld_ptr, lowNext_new, lowNext_old;
-reg [9:0]		end_ptr;
+reg [9:0]		lowRead_ptr;
 reg [10:0] 		hiNew_ptr, hiOld_ptr, hiNext_new, hiNext_old;
+reg [10:0]		hiRead_ptr;
 
 // Declare status registers for high and low queues
 //// Define low frequency Registers 
-reg 			lowFull_reg, lowEmpty_reg, lowFull_next, lowEmpty_next;	//Low freq Q is full, is empty, will be full on next write, will be empty on next read
+reg 			lowFull_reg, lowEmpty_reg;	//Low freq Q is full, is empty
+reg [10:0]		hiEnd_ptr;
 
 //// Define high frequency registers 
-reg 			hiFull_reg, hiEmpty_reg, hiFull_next, hiEmpty_next;		//High freq Q is full, is empty, will be full on next write, will be empty on next read
+reg 			hiFull_reg, hiEmpty_reg;	//High freq Q is full, is empty
+reg [9:0]		lowEnd_ptr;
 
 /* ------ Instantiate the dual port modules -------------------------------------------------------- */
 // Low frequency module connections 
@@ -45,36 +48,25 @@ always @(posedge clk) begin
 		lowOld_ptr 		<= 10'h000;
 		hiNew_ptr 		<= 10'h000;
 		hiOld_ptr 		<= 10'h000;
-		// Reset Empty/full definitions
-		lowFull_reg		<= 1'b0;
-		lowEmpty_reg	<= 1'b1;
-		hiFull_reg		<= 1'b0;
-		hiEmpty_reg		<= 1'b1;
 	end else begin
 		// Set Pointers
 		lowNew_ptr 		<= lowNext_new;
 		lowOld_ptr		<= lowNext_old;
 		hiNew_ptr		<= hiNext_new;
 		hiOld_ptr		<= hiNext_old;
-		// Set Empty/full definitions
-		lowFull_reg		<= lowFull_next;
-		lowEmpty_reg	<= lowEmpty_next;
-		hiFull_reg		<= hiFull_next;
-		hiEmpty_reg		<= hiEmpty_next;
 	end
 end
-	
-/* ------ Designate Empty/Full Arrays ------------------------------------------------------------- */
-assign lowFull_next		= (&(lowNew_ptr + 1));	//Full next - when all bits in lowNew_ptr addr are 1 away from being all 1
-assign lowEmpty_next	= &lowFull_reg;			//Will be empty on next read
-assign hiFull_next		= (&(hiNew_ptr + 1));	//View corresp. above
-assign hiEmpty_next 	= &hiFull_reg;			//View corresp. above
 
 /* ------ Control for read/write pointers and empty/full registers -------------------------------- */
-always @()
+assign lowEnd_ptr		= lowOld_ptr + 1020;
+assign lowFull_reg		= (!rst_n) ? 1'b0 : (lowOld_ptr == lowNew_ptr + 1);
+assign lowEmpty_reg		= (!rst_n) ? 1'b1 : (lowNew_ptr == lowOld_ptr);
+//assign hiEnd_ptr		= 
+assign hiEmpty_reg		= (!rst_n) ? 1'b1 : (hiNew_ptr == hiOld_ptr);
 
-
-/* ------
+/* ------ Manage pointers in high frequency queue ------------------------------------------------- */
+assign hiNext_new		= (hiNext_new == 1536)	? 10'h000 : hiNew_ptr + 1;
+assign hiNext_old		= (hiNext_old == 1536)	? 10'h000 : hiOld_ptr + 1;
 
 
 	
