@@ -18,12 +18,13 @@ reg [10:0]		hiRead_ptr;
 
 // Declare status registers for high and low queues
 //// Define low frequency Registers 
-reg 			lowFull_reg;	//Low freq Q is full
-reg [10:0]		lowEnd_ptr;
+reg 			lowFull_reg, lowEnd_ptr;	//Low freq Q is full, when it is prepped to read
+reg [9:0]		lowCnt;				//Counts how many addresses have samples writen to them
 
 //// Define high frequency registers 
 reg 			hiFull_reg;	//High freq Q is full
 reg				wrt_high; 					//TRUE until high freq Q is full for the first time
+reg [10;0]		hiCnt;		//Counts how many addresses have samples writen to them
 
 /* ------ Instantiate the dual port modules -------------------------------------------------------- */
 // Low frequency module connections 
@@ -54,6 +55,8 @@ always @(posedge clk, negedge rst_n) begin
 		lowOld_ptr 		<= 10'h000;
 		hiNew_ptr 		<= 10'h1FE;
 		hiOld_ptr 		<= 10'h000;
+		// Reset counters
+		lowCnt			<= 10'h000;
 	end else begin
 		// Set Pointers
 		lowNew_ptr 		<= lowNext_new;
