@@ -40,13 +40,19 @@ wire [15:0] 	hiRdata;
 dualPort1024x16 i1024Port(.clk(clk),.we(we),.waddr(lowWaddr),.raddr(lowRaddr),.wdata(lowWdata),.rdata(lowRdata));
 dualPort1536x16 i1536Port(.clk(clk),.we(we),.waddr(hiWaddr),.raddr(hiRaddr),.wdata(hiWdata),.rdata(hiRdata));
 
-/* ----- Always Block to Update States ------------------------------------------------------------ */
+/* ------ Define States ---------------------------------------------------------------------------- */
+reg [1:0] state, nxt_state;
+localparam INIT = 2'b00;		//Reset control values
+localparam Write_Only = 2'b01;		//Arrays have not yet written thte required number of samples to begin reading
+localparam Read_Write = 2'b10;		//Arrays performing reads and writes at each cycle
+
+/* ------ Always Block to Update States ------------------------------------------------------------ */
 always @(posedge clk, negedge rst_n) begin 
 	if(!rst_n) begin
 		// Reset Pointers
 		lowNew_ptr 		<= 10'h000;
 		lowOld_ptr 		<= 10'h000;
-		hiNew_ptr 		<= 10'h000;
+		hiNew_ptr 		<= 10'h1FE;
 		hiOld_ptr 		<= 10'h000;
 	end else begin
 		// Set Pointers
@@ -57,20 +63,30 @@ always @(posedge clk, negedge rst_n) begin
 	end
 end
 
+always @(posedge clk, negedge rst_n)
+	if (!rst_n)
+		state <= INIT;
+	else 
+		state < nxt_state;
+
 /* ------ Control for read/write pointers and empty/full registers -------------------------------- */
 assign lowEnd_ptr		= lowOld_ptr + 1020;
-assign lowFull_reg		= (!rst_n) ? 1'b0 : (lowOld_ptr == lowNew_ptr + 1);
+//assign lowFull_reg		= (!rst_n) ? 1'b0 : (lowOld_ptr == lowNew_ptr + 1);
 assign lowEmpty_reg		= (!rst_n) ? 1'b1 : (lowNew_ptr == lowOld_ptr);
-assign wrt_high			= (!rst_n) ? 1'b1 :
-						  (hiOld_ptr == 0 && hiNew_ptr == 1531) ? 1'b0 : wrt_high;
-assign hiFull_reg		= (!rst_n) ? 1'b0 : (1356  == hiNew_ptr - hiOld_ptr);
-assign hiEmpty_reg		= (!rst_n) ? 1'b1 : (hiNew_ptr == hiOld_ptr);
+always @(posedge clk, negedge rst_n) begin
+	if(!rst_n)
+		wrt_high <= 1'b1;
+	else if(hiOld_ptr == 0 && hiNew_ptr == 1531)
+		wrt_high <= 1'b0;
+end
+//assign hiFull_reg		= (!rst_n) ? 1'b0 : (1356  == hiNew_ptr - hiOld_ptr);
+//assign hiEmpty_reg		= !rst_n;
 
 /* ------ Manage pointers in high frequency queue ------------------------------------------------- */
 assign hiNext_new		= (hiNext_new == 1536)	? 10'h000 : hiNew_ptr + 1;
 assign hiNext_old		= (hiNext_old == 1536)	? 10'h000 : hiOld_ptr + 1;
 
-/* ------ Set read/write addresses ---------------------------------------------------------------- */
+/* ------ Begin State Machine --------------------------------------------------------------------- */
 
 
 	
