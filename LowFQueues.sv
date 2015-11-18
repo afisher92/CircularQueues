@@ -23,16 +23,9 @@ reg [9:0]		cnt;				//Counts how many addresses have samples writen to them
 reg			wrt_cnt;		// Keeps track of every other valid signal
 
 /* ------ Instantiate the dual port modules -------------------------------------------------------- */
-// Instantiate the modules
 dualPort1024x16 i1024Port(.clk(clk),.we(we),.waddr(new_ptr),.raddr(read_ptr),.wdata(new_smpl),.rdata(smpl_out));
 
-/* ------ Define States ---------------------------------------------------------------------------- */
-reg [1:0] state, nxt_state;
-localparam WRITE 	= 2'b00;		//Arrays have not yet written thte required number of samples to begin reading
-localparam FULL		= 2'b01;		//Arrays have written the required amount of samples
-localparam READ		= 2'b10;		//Arrays performing reads and writes at each cycle
-
-/* ------ Always Block to Update States ------------------------------------------------------------ */
+/* ------ Always Block to Update Pointers ---------------------------------------------------------- */
 always @(posedge clk, negedge rst_n) begin 
 	if(!rst_n) begin
 		// Reset Pointers
@@ -46,12 +39,6 @@ always @(posedge clk, negedge rst_n) begin
 		read_ptr		<= next_read;
 	end
 end
-
-always @(posedge clk, negedge rst_n)
-	if (!rst_n)
-		state <= WRITE;
-	else 
-		state < nxt_state;
 
 /* ------ Control for read/write pointers and empty/full registers -------------------------------- */
 assign end_ptr		= old_ptr + 1020;
