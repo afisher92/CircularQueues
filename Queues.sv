@@ -72,7 +72,7 @@ always @(posedge clk, negedge rst_n)
 
 /* ------ Control for read/write pointers and empty/full registers -------------------------------- */
 assign lowEnd_ptr		= lowOld_ptr + 1020;
-//assign lowFull_reg		= (!rst_n) ? 1'b0 : (lowOld_ptr == lowNew_ptr + 1);
+assign lowFull_reg		= &lowCnt;
 always @(posedge clk, negedge rst_n) begin
 	if(!rst_n)
 		wrt_high <= 1'b1;
@@ -86,7 +86,7 @@ assign hiNext_new		= (hiNext_new == 1536)	? 10'h000 : hiNew_ptr + 1;
 assign hiNext_old		= (hiNext_old == 1536)	? 10'h000 : hiOld_ptr + 1;
 
 /* ------ Manage Queue Counters ------------------------------------------------------------------- */
-// Low Frequency Q counter - 
+// Low Frequency Q counter 
 always @(posedge wrt_smpl)
 	if(!rst_n)
 		lowCnt <= 10'h000;
