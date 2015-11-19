@@ -54,12 +54,19 @@ assign full_reg		= &cnt;
 assign read		= (new_ptr == end_ptr);
 
 /* ------ Manage Next Read/Write Pointers --------------------------------------------------------- */
-always @(posedge wrt_smpl)
-	next_new <= new_ptr + 1; 
+always @(posedge wrt_smpl, negedge rst_n) begin
+	if(!rst_n)
+		next_new <= 10'h001;
+	else
+		next_new <= new_ptr + 1; 
+end
 
-always @(posedge next_new)
-	if (read)
+always @(posedge next_new, negedge rst_n) begin
+	if(!rst_n)
+		next_old <= 10'h001;
+	else if (read)
 		next_old <= old_ptr + 1;
+end
 
 always @(posedge clk, negedge rst_n) begin
 	if (!rst_n)
