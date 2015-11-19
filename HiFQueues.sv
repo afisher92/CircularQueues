@@ -22,7 +22,7 @@ reg [10:0]		cnt;				//Counts how many addresses have samples writen to them
 dualPort1536x16 i536Port(.clk(clk),.we(we),.waddr(new_ptr),.raddr(read_ptr),.wdata(new_smpl),.rdata(smpl_out));
 
 /* ------ Always Block to Update States ------------------------------------------------------------ */
-always @(wrt_smpl, negedge rst_n) begin 
+always @(posedge wrt_smpl, negedge rst_n) begin 
 	if(!rst_n) begin
 		// Reset Pointers
 		new_ptr  <= 10'h1FE;
@@ -52,10 +52,15 @@ end
 assign full_reg	= (!rst_n) ? 1'b0 : (cnt == 1536);
 
 /* ------ Manage pointers in high frequency queue ------------------------------------------------- */
-assign next_new	= (wrt_smpl & next_new == 1536) ? 10'h000 : 
-		  (wrt_smpl) 			? new_ptr + 1;
+always @(posedge wrt_smpl, negedge rst_n)
+	if(!rst_n)
+		next_new <= new_ptr + 1;
+	else if(wrt_smpl & next_new == 1536)
+		next_new <= 10'h000;
+	else
+		next_new <= new_ptr + 1;
 
-always @(next_new) begin
+always @(posedge next_new) begin
 	if(old_ptr == 1535)
 		next_old <= 10'h000;
 	else if (read)
@@ -80,7 +85,7 @@ always @(posedge wrt_smpl, negedge rst_n)
 	if (!rst_n)
 		cnt <= 11'h000;
 	else if(cnt != 1535) begin
-		cnt <= hiCnt + 1;
+		cnt <= cnt + 1;
 	end
 
 endmodule
