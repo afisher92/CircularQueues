@@ -34,7 +34,11 @@ always @(wrt_smpl, negedge rst_n) begin
 	end
 end
 
-assign read_ptr = nect_read;
+always @(posedge clk, negedge rst_n)
+	if(!rst_n)
+		next_read <= old_ptr;
+	else if(read)
+		read_ptr = next_read;
 
 /* ------ Control for read/write pointers and empty/full registers -------------------------------- */
 // Mimic LowFQueue end_ptr
@@ -48,7 +52,8 @@ end
 assign full_reg	= (!rst_n) ? 1'b0 : (cnt == 1536);
 
 /* ------ Manage pointers in high frequency queue ------------------------------------------------- */
-assign next_new	= (next_new == 1536) ? 10'h000 : new_ptr + 1;
+assign next_new	= (wrt_smpl & next_new == 1536) ? 10'h000 : 
+		  (wrt_smpl) 			? new_ptr + 1;
 
 always @(next_new) begin
 	if(old_ptr == 1535)
