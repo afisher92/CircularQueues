@@ -14,8 +14,7 @@ reg [10:0] 		new_ptr, old_ptr, next_new, next_old;
 reg [10:0]		read_ptr, next_read;
 
 /* Define high frequency registers */
-reg 			full_reg;			//High freq Q is full
-reg			read; 				//FALSE until high freq Q is full for the first time
+reg 			full_reg, read;			//full_reg: High freq Q is full; read: FALSE until high freq Q is full for the first time
 reg [10:0]		cnt;				//Counts how many addresses have samples writen to them
 
 /* ------ Instantiate the dual port modules -------------------------------------------------------- */
@@ -38,7 +37,7 @@ always @(posedge clk, negedge rst_n)
 	if(!rst_n)
 		next_read <= old_ptr;
 	else if(read)
-		read_ptr = next_read;
+		read_ptr <= next_read;
 
 //Update Sequencing
 assign sequencing = read;
@@ -57,7 +56,7 @@ assign full_reg	= (!rst_n) ? 1'b0 : (cnt == 1535);
 /* ------ Manage pointers in high frequency queue ------------------------------------------------- */
 always @(posedge wrt_smpl, negedge rst_n)
 	if(!rst_n)
-		next_new <= new_ptr + 1;
+		next_new <= 10'h1FE;
 	else if(wrt_smpl & next_new == 1535)
 		next_new <= 10'h000;
 	else
