@@ -5,6 +5,9 @@ reg [15:0] new_smpl;
 wire [15:0] smpl_out;
 wire sequencing;
 
+reg [15:0] data;
+reg wrt_en;
+
 LowFQueues iLowQ (.clk(clk), .rst_n(rst_n), .new_smpl(new_smpl), .wrt_smpl(wrt_smpl), .smpl_out(smpl_out), .sequencing(sequencing));
 
 initial begin
@@ -13,6 +16,13 @@ initial begin
   wrt_smpl = 0;
   new_smpl = 16'h0000;
   #5 rst_n = 1;
+
+ /* while(~&data) begin
+	if(
+	if(wrt_smpl)
+		data = data + 1;
+*/
+
 end
 
 
