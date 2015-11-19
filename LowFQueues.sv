@@ -21,13 +21,13 @@ reg 			full_reg, read;	//Low freq Q is full, when it is prepped to read, signal 
 reg [9:0]		cnt;				//Counts how many addresses have samples writen to them
 
 // Define wrt_smpl counter
-reg			wrt_cnt;		// Keeps track of every other valid signal
+reg			wrt_en;		// Keeps track of every other valid signal
 
 /* ------ Instantiate the dual port modules -------------------------------------------------------- */
 dualPort1024x16 i1024Port(.clk(clk),.we(we),.waddr(new_ptr),.raddr(read_ptr),.wdata(new_smpl),.rdata(smpl_out));
 
 /* ------ Always Block to Update Pointers ---------------------------------------------------------- */
-always @(posedge wrt_cnt, negedge rst_n) begin 
+always @(posedge wrt_en, negedge rst_n) begin 
 	if(!rst_n) begin
 		// Reset Pointers
 		new_ptr 		<= 10'h000;
@@ -41,7 +41,7 @@ end
 
 always @(posedge clk, negedge rst_n)
 	if(!rst_n)
-		read_ptr <= old_ptr;
+		read_ptr <= 10'h000;
 	else if(read)
 		read_ptr <= next_read;
 		
@@ -61,7 +61,7 @@ always @(posedge wrt_smpl, negedge rst_n) begin
 		next_new <= new_ptr + 1; 
 end
 
-always @(posedge next_new, negedge rst_n) begin
+always @(posedge wrt_smpl, negedge rst_n) begin
 	if(!rst_n)
 		next_old <= 10'h001;
 	else if (read)
@@ -70,7 +70,7 @@ end
 
 always @(posedge clk, negedge rst_n) begin
 	if (!rst_n)
-		next_read <= old_ptr + 1;
+		next_read <= 10'h001;
 	else if (read & read_ptr != new_ptr - 1)
 		next_read <= read_ptr + 1;
 	else
@@ -82,16 +82,16 @@ end
 always @(posedge wrt_smpl, negedge rst_n) begin
 	if(!rst_n) // Counts until the array is full
 		cnt		<= 10'h000;
-	else if(~&cnt & wrt_cnt == 1) begin
+	else if(~&cnt & wrt_en == 1) begin
 		cnt		<= cnt + 1;
 	end
 end
 
 always @(posedge wrt_smpl, negedge rst_n) begin
 	if(!rst_n) // Keep track of every other wrt_smpl
-		wrt_cnt <= 1'b0;
+		wrt_en <= 1'b0;
 	else
-		wrt_cnt <= ~wrt_cnt;
+		wrt_en <= ~wrt_en;
 end
 	
 endmodule
