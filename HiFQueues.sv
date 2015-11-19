@@ -40,6 +40,9 @@ always @(posedge clk, negedge rst_n)
 	else if(read)
 		read_ptr = next_read;
 
+//Update Sequencing
+assign sequencing = read;
+
 /* ------ Control for read/write pointers and empty/full registers -------------------------------- */
 // Mimic LowFQueue end_ptr
 always @(posedge clk, negedge rst_n) begin
