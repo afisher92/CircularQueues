@@ -26,7 +26,7 @@ reg			wrt_cnt;		// Keeps track of every other valid signal
 dualPort1024x16 i1024Port(.clk(clk),.we(we),.waddr(new_ptr),.raddr(read_ptr),.wdata(new_smpl),.rdata(smpl_out));
 
 /* ------ Always Block to Update Pointers ---------------------------------------------------------- */
-always @(wrt_smpl, negedge rst_n) begin 
+always @(posedge wrt_smpl, negedge rst_n) begin 
 	if(!rst_n) begin
 		// Reset Pointers
 		new_ptr 		<= 10'h000;
@@ -42,7 +42,7 @@ always @(posedge clk, negedge rst_n)
 	if(!rst_n)
 		read_ptr <= old_ptr;
 	else if(read)
-		read_ptr <= next_read
+		read_ptr <= next_read;
 
 /* ------ Control for read/write pointers and empty/full registers -------------------------------- */
 assign end_ptr		= old_ptr + 1020;
@@ -50,9 +50,10 @@ assign full_reg		= &cnt;
 assign read		= (new_ptr == end_ptr);
 
 /* ------ Manage Next Read/Write Pointers --------------------------------------------------------- */
-assign next_new = (wrt_cnt == 1) ? new_ptr + 1;
+always @(posedge wrt_cnt)
+	next_new <= new_ptr + 1; 
 
-always @(next_new)
+always @(posedge next_new)
 	if (read)
 		next_old <= old_ptr + 1;
 
