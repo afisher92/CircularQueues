@@ -13,7 +13,7 @@ module HiFQueues (
 reg [10:0] 		new_ptr, old_ptr, next_new, next_old;
 reg [10:0]		read_ptr, next_read;
 
-/* Define high frequency registers 
+/* Define high frequency registers */
 reg 			full_reg;			//High freq Q is full
 reg			read; 				//FALSE until high freq Q is full for the first time
 reg [10:0]		cnt;				//Counts how many addresses have samples writen to them
