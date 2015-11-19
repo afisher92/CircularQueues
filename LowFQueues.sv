@@ -13,10 +13,11 @@ module LowFQueues (
 // Declare pointers for high band and low band queues
 reg [9:0] 		new_ptr, old_ptr, next_new, next_old;
 reg [9:0]		read_ptr, next_read;
+reg [9:0]		end_ptr;
 
 // Declare status registers for high and low queues
 //// Define low frequency Registers 
-reg 			full_reg, end_ptr, read;	//Low freq Q is full, when it is prepped to read, signal defining when to read samples
+reg 			full_reg, read;	//Low freq Q is full, when it is prepped to read, signal defining when to read samples
 reg [9:0]		cnt;				//Counts how many addresses have samples writen to them
 
 // Define wrt_smpl counter
@@ -26,7 +27,7 @@ reg			wrt_cnt;		// Keeps track of every other valid signal
 dualPort1024x16 i1024Port(.clk(clk),.we(we),.waddr(new_ptr),.raddr(read_ptr),.wdata(new_smpl),.rdata(smpl_out));
 
 /* ------ Always Block to Update Pointers ---------------------------------------------------------- */
-always @(posedge wrt_smpl, negedge rst_n) begin 
+always @(posedge wrt_cnt, negedge rst_n) begin 
 	if(!rst_n) begin
 		// Reset Pointers
 		new_ptr 		<= 10'h000;
@@ -48,12 +49,12 @@ always @(posedge clk, negedge rst_n)
 assign sequencing = read;
 
 /* ------ Control for read/write pointers and empty/full registers -------------------------------- */
-assign end_ptr		= old_ptr + 1020;
+assign end_ptr		= old_ptr + 10'd1020;
 assign full_reg		= &cnt;
 assign read		= (new_ptr == end_ptr);
 
 /* ------ Manage Next Read/Write Pointers --------------------------------------------------------- */
-always @(posedge wrt_cnt)
+always @(posedge wrt_smpl)
 	next_new <= new_ptr + 1; 
 
 always @(posedge next_new)
@@ -77,10 +78,13 @@ always @(posedge wrt_smpl, negedge rst_n) begin
 	else if(~&cnt & wrt_cnt == 1) begin
 		cnt		<= cnt + 1;
 	end
+end
+
+always @(posedge wrt_smpl, negedge rst_n) begin
 	if(!rst_n) // Keep track of every other wrt_smpl
 		wrt_cnt <= 1'b0;
 	else
-		wrt_cnt <= wrt_cnt + 1;
+		wrt_cnt <= ~wrt_cnt;
 end
 	
 endmodule
