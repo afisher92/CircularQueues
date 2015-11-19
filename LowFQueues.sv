@@ -43,6 +43,9 @@ always @(posedge clk, negedge rst_n)
 		read_ptr <= old_ptr;
 	else if(read)
 		read_ptr <= next_read;
+		
+//Update Sequencing
+assign sequencing = read;
 
 /* ------ Control for read/write pointers and empty/full registers -------------------------------- */
 assign end_ptr		= old_ptr + 1020;
