@@ -52,13 +52,13 @@ always @(posedge clk, negedge rst_n) begin
 		read <= 1'b1;
 end
 
-assign full_reg	= (!rst_n) ? 1'b0 : (cnt == 1536);
+assign full_reg	= (!rst_n) ? 1'b0 : (cnt == 1535);
 
 /* ------ Manage pointers in high frequency queue ------------------------------------------------- */
 always @(posedge wrt_smpl, negedge rst_n)
 	if(!rst_n)
 		next_new <= new_ptr + 1;
-	else if(wrt_smpl & next_new == 1536)
+	else if(wrt_smpl & next_new == 1535)
 		next_new <= 10'h000;
 	else
 		next_new <= new_ptr + 1;
