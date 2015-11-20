@@ -24,7 +24,7 @@ reg [9:0]		cnt;				//Counts how many addresses have samples writen to them
 reg			wrt_en;		// Keeps track of every other valid signal
 
 /* ------ Instantiate the dual port modules -------------------------------------------------------- */
-dualPort1024x16 i1024Port(.clk(clk),.we(we),.waddr(new_ptr),.raddr(read_ptr),.wdata(new_smpl),.rdata(smpl_out));
+dualPort1024x16 i1024Port(.clk(clk),.we(wrt_en),.waddr(new_ptr),.raddr(read_ptr),.wdata(new_smpl),.rdata(smpl_out));
 
 /* ------ Always Block to Update Pointers ---------------------------------------------------------- */
 always @(posedge wrt_en, negedge rst_n) begin 
