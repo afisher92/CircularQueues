@@ -1,0 +1,19 @@
+module Filters_tb();
+
+wire [15:0]audio_in;
+
+reg [15:0] scoobydoo[8191:0];
+
+// Call Nate and Brandon's filters code //
+Filters iDUT(.clk(clk),.rst_n(rst_n),.SDOUT(SDOUT),);
+
+  initial
+    $readmemh("audio_in.dat",scoobydoo);   // read audio_in.dat data	
+  
+  always @(posedge clk)
+    audio_in <= scoobydoo[addr];
+
+always
+ #10 clk = ~clk
+
+endmodule
