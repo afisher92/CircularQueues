@@ -1,0 +1,11 @@
+module test_filters(audio_in,audio_out,clk);
+
+input clk;	
+input [15:0] audio_in;
+
+output reg [15:0] audio_out;
+
+always @(posedge clk)
+  audio_out <= audio_in;
+
+endmodule
