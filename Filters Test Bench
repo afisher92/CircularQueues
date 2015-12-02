@@ -1,19 +1,35 @@
 module Filters_tb();
 
-wire [15:0]audio_in;
-
+reg clk;
+reg [12:0] addr;
+reg [15:0]audio_in,audio_out;
 reg [15:0] scoobydoo[8191:0];
 
+integer file;
+
 // Call Nate and Brandon's filters code //
-Filters iDUT(.clk(clk),.rst_n(rst_n),.SDOUT(SDOUT),);
+//Filters iDUT(.clk(clk),.rst_n(rst_n),.SDOUT(SDOUT));
 
-  initial
-    $readmemh("audio_in.dat",scoobydoo);   // read audio_in.dat data	
+test_filters iPoot(.clk(clk),.audio_in(audio_in),.audio_out(audio_out));
+
+// Read from audio_in for data //
+initial
+   $readmemh("audio_in.dat",scoobydoo); 
   
-  always @(posedge clk)
-    audio_in <= scoobydoo[addr];
+always @(posedge clk)
+   audio_in <= scoobydoo[addr];
 
+// Open Excel file to write results to //
+initial begin
+   file = $fopen("results.csv");
+   $fdisplay(file,audio_out);
+   $fclose(file);
+end
+
+// Clock //
 always
- #10 clk = ~clk
+ #10 clk = ~clk;
+
+
 
 endmodule
