@@ -5,31 +5,44 @@ reg [12:0] addr;
 reg [15:0]audio_in,audio_out;
 reg [15:0] scoobydoo[8191:0];
 
-integer file;
+integer file,i;
 
 // Call Nate and Brandon's filters code //
 //Filters iDUT(.clk(clk),.rst_n(rst_n),.SDOUT(SDOUT));
 
 test_filters iPoot(.clk(clk),.audio_in(audio_in),.audio_out(audio_out));
 
-// Read from audio_in for data //
-initial
-   $readmemh("audio_in.dat",scoobydoo); 
-  
-always @(posedge clk)
-   audio_in <= scoobydoo[addr];
-
-// Open Excel file to write results to //
 initial begin
-   file = $fopen("results.csv");
-   $fdisplay(file,audio_out);
-   $fclose(file);
+    clk = 0;
+    i = 0;
+    $readmemh("audio_in.dat",scoobydoo); // Open the file once at the beginning //
+    file = $fopen("results.csv");
+end
+
+// Read from audio_in for data //
+always @(posedge clk) begin  
+  audio_in <= scoobydoo[i]; // Write the ith line of the file to audio_in //
+  i = i + 1;
+// Gets two x datas, needs to be corrected //
+end
+
+// Close file when all samples are written //
+always @(posedge clk) begin  
+ if (i == 8195) begin // Should be fixed to any file length, not hard coded //
+  $fclose(file);
+  $stop;
+ end
+ else if (i>2) begin
+  $fdisplay(file,audio_out); 
+ end
 end
 
 // Clock //
-always
- #10 clk = ~clk;
+always begin
+ #5 clk = ~clk;
+end
 
 
+endmodule
 
 endmodule
