@@ -1,19 +1,20 @@
 module Filters_tb();
 
-reg clk;
+reg clk, rst_n;
 reg [12:0] addr;
-reg [15:0]audio_in,audio_out;
+reg [15:0]rght_in,rght_out;
 reg [15:0] scoobydoo[8191:0];
 
 integer file,i;
 
 // Call Nate and Brandon's filters code //
-//Filters iDUT(.clk(clk),.rst_n(rst_n),.SDOUT(SDOUT));
+LPfilt iDUT(.rght_in(rght_in), .lft_in(lft_in), .sequencing(sequencing), .rst_n(rst_n), .rght_out(rght_out), .lft_out(lft_out), .clk(clk));
 
-test_filters iPoot(.clk(clk),.audio_in(audio_in),.audio_out(audio_out));
+//test_filters iPoot(.clk(clk),.audio_in(audio_in),.audio_out(audio_out));
 
 initial begin
     clk = 0;
+    rst_n = 1;
     i = 0;
     $readmemh("audio_in.dat",scoobydoo); // Open the file once at the beginning //
     file = $fopen("results.csv");
@@ -21,7 +22,7 @@ end
 
 // Read from audio_in for data //
 always @(posedge clk) begin  
-  audio_in <= scoobydoo[i]; // Write the ith line of the file to audio_in //
+  rght_in <= scoobydoo[i]; // Write the ith line of the file to audio_in //
   i = i + 1;
 // Gets two x datas, needs to be corrected //
 end
@@ -33,7 +34,7 @@ always @(posedge clk) begin
   $stop;
  end
  else if (i>2) begin
-  $fdisplay(file,audio_out); 
+  $fdisplay(file,rght_out); 
  end
 end
 
@@ -42,7 +43,5 @@ always begin
  #5 clk = ~clk;
 end
 
-
-endmodule
 
 endmodule
