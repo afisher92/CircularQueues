@@ -2,7 +2,7 @@ module Filters_tb();
 
 reg clk, rst_n;
 reg [12:0] addr;
-reg [15:0]rght_in,rght_out;
+reg [15:0]rght_in,rght_out,lft_in, lft_out;
 reg [15:0] scoobydoo[8191:0];
 
 integer file,i;
