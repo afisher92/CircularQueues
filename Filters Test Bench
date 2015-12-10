@@ -23,6 +23,7 @@ end
 // Read from audio_in for data //
 always @(posedge clk) begin  
   rght_in <= scoobydoo[i]; // Write the ith line of the file to audio_in //
+  lft_in <= scoobydoo[i];
   i = i + 1;
 // Gets two x datas, needs to be corrected //
 end
@@ -34,7 +35,7 @@ always @(posedge clk) begin
   $stop;
  end
  else if (i>2) begin
-  $fdisplay(file,rght_out); 
+  $fdisplay(file,"%d,%d",rght_out,lft_out); 
  end
 end
 
