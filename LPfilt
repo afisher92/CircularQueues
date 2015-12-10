@@ -1,0 +1,50 @@
+module LPfilt(rght_in, lft_in, sequencing, rst_n, rght_out, lft_out, clk);
+
+input rst_n, clk, sequencing;
+input [15:0]rght_in, lft_in;
+
+output [15:0]rght_out, lft_out;
+
+reg[15:0]dout;
+reg[31:0]laccum, raccum, lmult, rmult;
+reg[9:0]addr;
+
+//Instantiates the ROM
+ROM_LP LP(.dout(dout), .clk(clk), .addr(addr));
+
+//Implements coefficient multiplication
+always_ff @(posedge clk, negedge rst_n)
+ if(!rst_n) begin
+  rmult <= 32'h00000000;
+  lmult <= 32'h00000000;
+ end else begin
+  rmult <= dout * rght_in;
+  lmult <= dout * lft_in;
+ end
+//Implements addr
+always_ff @(posedge clk, negedge rst_n)
+ if(!rst_n)
+  addr <= 10'h000;
+ else if(addr == 10'h3FE)
+	    addr <= 10'h000;
+	  else if(!sequencing)
+	    addr <= 10'h000;
+	   else
+	    addr <= addr + 1;
+
+//Implements the accum
+always_ff @(posedge clk, negedge rst_n)
+ if(!rst_n) begin
+  raccum <= 32'h00000000;
+  laccum <= 32'h00000000;
+ end else if(sequencing) begin
+	    raccum <= raccum + rmult;
+	    laccum <= laccum + lmult;
+	  end else begin
+	    raccum <= raccum;
+	    laccum <= laccum;
+	  end
+assign rght_out = raccum[30:15];
+assign lft_out = laccum[30:15];
+
+endmodule
